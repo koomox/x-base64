@@ -8,6 +8,16 @@ import (
 	"bufio"
 )
 
+var (
+	base64_buf [BASE64_LINE_LEN]byte
+	bytes_buf [BYTE_LINE_LEN]byte
+)
+
+const (
+	BASE64_LINE_LEN = 64
+	BYTE_LINE_LEN = 48  // (txt)48Bytes => (base64)6bit => (base64)64Bytes
+)
+
 func main() {
 	args := os.Args
 	if args == nil || len(args) < 4 {
@@ -54,11 +64,9 @@ func working(in_file, out_file string, code bool) {
 
 func encode_base64(fi, fo *os.File) {
 	buf := bufio.NewReader(fi)
-	const base64_line_len int = 48  // (txt)48Bytes => (base64)6bit => (base64)64Bytes
 	for flag := true; flag ; {  // break for while
-		data := [base64_line_len]byte{0}
 		i := 0
-		for ; i < base64_line_len; {  // break for while
+		for ; i < BYTE_LINE_LEN; {  // break for while
 			c, err := buf.ReadByte()
 			if err != nil {
 				if err != io.EOF {
@@ -71,13 +79,13 @@ func encode_base64(fi, fo *os.File) {
 			if c == '\r' {  // delete \r char
 				continue
 			}
-			data[i] = c
+			bytes_buf[i] = c
 			i++
 		}
 		if i == 0 {  // i == 0
 			continue
 		}
-		encodeString := base64.StdEncoding.EncodeToString(data[:i])
+		encodeString := base64.StdEncoding.EncodeToString(bytes_buf[:i])
 		if flag == true {
 			encodeString += "\n"
 		}
@@ -87,11 +95,9 @@ func encode_base64(fi, fo *os.File) {
 
 func decode_base64(fi, fo *os.File) {
 	buf := bufio.NewReader(fi)
-	const base64_line_len int = 64  // (txt)48Bytes => (base64)6bit => (base64)64Bytes
 	for flag := true; flag ; {
-		data := [base64_line_len]byte{0}
 		i := 0
-		for ; i < base64_line_len; {
+		for ; i < BASE64_LINE_LEN; {
 			c, err := buf.ReadByte()
 			if err != nil {
 				if err != io.EOF {
@@ -104,13 +110,13 @@ func decode_base64(fi, fo *os.File) {
 			if c == '\r' || c == '\n' {  // delete \r\n char
 				continue
 			}
-			data[i] = c
+			base64_buf[i] = c
 			i++
 		}
 		if i == 0 {  // i == 0
 			continue
 		}
-		decodeBytes, err := base64.StdEncoding.DecodeString(string(data[:i]))
+		decodeBytes, err := base64.StdEncoding.DecodeString(string(base64_buf[:i]))
 		if err != nil {
 			fmt.Printf("Encode Base64 Error: %s\n", err.Error())
 			os.Exit(2)

@@ -1,5 +1,5 @@
 @echo off
-cd /d %~dp0
 SET GOPATH=%~dp0
-go build ./src/main.go
+cd /d %GOPATH%
+go build ./src/x-base64.go
 pause
