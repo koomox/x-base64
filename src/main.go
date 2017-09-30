@@ -77,7 +77,10 @@ func encode_base64(fi, fo *os.File) {
 		if i == 0 {  // i == 0
 			continue
 		}
-		encodeString := base64.StdEncoding.EncodeToString(data[:i]) + "\n"
+		encodeString := base64.StdEncoding.EncodeToString(data[:i])
+		if flag == true {
+			encodeString += "\n"
+		}
 		fo.Write([]byte(encodeString))
 	}
 }
